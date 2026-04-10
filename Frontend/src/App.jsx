@@ -1,15 +1,17 @@
-
 import './App.css'
+import UrlForm from './components/urlForm'
+import HomePage from './pages/HomePage'
+
 
 function App() {
  
 
   return (
-    <>
-     
-      <h1> This is App page </h1>
-        
-    </>
+
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <HomePage />
+    </div>
+    
   )
 }
 
