@@ -3,8 +3,9 @@ import shortUrlModel from "../models/shortUrl.model.js";
 
 
 export async function sendUrl (req, res){
+    try{
     const {url} = req.body;
-    console.log(url);
+    //console.log(url);
 
     const shortUrl = nanoid(7);
 
@@ -13,27 +14,45 @@ export async function sendUrl (req, res){
         shortUrl : shortUrl
     })
 
-    newUrl.save();
+    await newUrl.save();
 
     // return res.send(nanoid(7));
 
     return res.status(201).json({
         message : "New short URL is generated", 
-        newUrl
+        shorturl : url + shortUrl
     })
+    }
+    catch(error) {
+        return res.staus(404).json({
+            message : "Internal Server error"
+        })
+    }
+
 };
 
 
 export async function getShortUrl(req, res){
-    const { id } = req.params;
+    try{
+    const { id } = req.params; 
+    
+    if(!id) {
+        return res.status(401).json({
+            message : "Please Enter the Short Url"
+        })
+    }
 
-    const url = await shortUrlModel.findOne({
-        shortUrl : id
-    })
+    const url = await shortUrlModel.findOneAndUpdate({
+        shortUrl : id,
+    }, 
+    {
+        $inc : {clicks : 1}
+    }
+    )
 
     if(url) {
 
-        // return res.redirect(url.fullUrl);
+        //return res.redirect(url.fullUrl);
 
         return res.status(200).json({
             message : "Long Url Found",
@@ -44,6 +63,12 @@ export async function getShortUrl(req, res){
     else {
         return res.status(404).json({
             message : "Url not found"
+        })
+    }
+    }
+    catch(error) {
+        return res.status(404).json({
+            message : "Internal Server Error"
         })
     }
 };
