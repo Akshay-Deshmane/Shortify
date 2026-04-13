@@ -1,75 +1,28 @@
-import { nanoid } from "nanoid";
-import shortUrlModel from "../models/shortUrl.model.js";
+import { getShortUrl } from "../dao/shortUrl.dao.js"
+import * as shortUrlService from "../services/shortUrl.service.js"
+import wrapAsync from "../utils/tryCatchWrapper.js"
 
-
-export async function sendUrl (req, res){
-    try{
-    const {url} = req.body;
-    //console.log(url);
-
-    const shortUrl = nanoid(7);
-
-    const newUrl = new shortUrlModel({
-        fullUrl : url,
-        shortUrl : shortUrl
-    })
-
-    await newUrl.save();
-
-    // return res.send(nanoid(7));
-
-    return res.status(201).json({
-        message : "New short URL is generated", 
-        shorturl : url + shortUrl
-    })
+export const createShortUrl = wrapAsync(async (req,res)=>{
+    const data = req.body
+    let shortUrl
+    if(req.user){
+        shortUrl = await shortUrlService.createShortUrlWithUser(data.url,req.user._id,data.slug)
+    }else{  
+        shortUrl = await shortUrlService.crateShortUrlWithoutUser(data.url)
     }
-    catch(error) {
-        return res.staus(404).json({
-            message : "Internal Server error"
-        })
-    }
-
-};
+    res.status(200).json({shortUrl : shortUrl});
+})
 
 
-export async function getShortUrl(req, res){
-    try{
-    const { id } = req.params; 
-    
-    if(!id) {
-        return res.status(401).json({
-            message : "Please Enter the Short Url"
-        })
-    }
+export const redirectFromShortUrl = wrapAsync(async (req,res)=>{
+    const {id} = req.params
+    const url = await getShortUrl(id)
+    if(!url) throw new Error("Short URL not found")
+    res.redirect(url.fullUrl)
+})
 
-    const url = await shortUrlModel.findOneAndUpdate({
-        shortUrl : id,
-    }, 
-    {
-        $inc : {clicks : 1}
-    }
-    )
-
-    if(url) {
-
-        //return res.redirect(url.fullUrl);
-
-        return res.status(200).json({
-            message : "Long Url Found",
-            url
-        })
-        
-    }
-    else {
-        return res.status(404).json({
-            message : "Url not found"
-        })
-    }
-    }
-    catch(error) {
-        return res.status(404).json({
-            message : "Internal Server Error"
-        })
-    }
-};
-
+export const createCustomShortUrl = wrapAsync(async (req,res)=>{
+    const {url,slug} = req.body
+    const shortUrl = await shortUrlService.crateShortUrlWithoutUser(url,slug);
+    res.status(200).json({shortUrl : shortUrl});
+})

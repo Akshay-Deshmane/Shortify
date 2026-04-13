@@ -1,6 +1,5 @@
 import { nanoid } from "nanoid";
-import shortUrlModel from "../models/shortUrl.model";
-
+import * as shortUrlDao from "../dao/shortUrl.dao.js";
 
 export const crateShortUrlWithoutUser = async (url) => {
     const shortUrl = nanoid(7);
@@ -9,10 +8,22 @@ export const crateShortUrlWithoutUser = async (url) => {
         throw new Error("Short URL is not generated");
     }
 
-    await shortUrlModel.create({
-        fullUrl : url,
-        shortUrl : shortUrl
-    });
+    await shortUrlDao.saveShortUrl(shortUrl, url);
+
+    return shortUrl;
+};
+
+
+export const createShortUrlWithUser = async (url, userId, slug = null) => {
+    const shortUrl = slug ? slug : nanoid(7);
+
+    const findShortUrl = await shortUrlDao.getCustomShortUrl(shortUrl);
+    
+    if(!findShortUrl) {
+        throw new Error("Short URL is already exists");
+    };
+
+    await shortUrlDao.saveShortUrl(shortUrl, url, userId);
 
     return shortUrl;
 };
