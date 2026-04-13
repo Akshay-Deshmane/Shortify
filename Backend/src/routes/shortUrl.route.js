@@ -4,9 +4,11 @@ import * as shortURL from "../controller/shortUrl.controller.js";
 
 const shortUrlRouter = Router();
 
-shortUrlRouter.post("/", shortURL.sendUrl);
+// shortUrlRouter.post("/", shortURL.sendUrl);
+// shortUrlRouter.get("/:id", shortURL.getShortUrl);
 
-shortUrlRouter.get("/:id", shortURL.getShortUrl);
+
+shortUrlRouter.post("/",shortURL.createShortUrl);
 
 
 export default shortUrlRouter;
